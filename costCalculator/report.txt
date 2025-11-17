@@ -1,0 +1,5 @@
+------ Baking Report ------
+Recipe Name:        Cupcakes
+Quantity:           12
+Individual Cost: $  1.00
+Total Cost: $       12.00
