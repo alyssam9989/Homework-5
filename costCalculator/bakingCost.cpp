@@ -90,7 +90,7 @@ void setConsoleColor() {
 void resetConsoleColor() {
 	system("color 07");
 }
-// this is my banner
+
 void showBanner() {
 	cout << "===========================================\n";
 	cout << "   Welcome to the Baking Cost Calculator   \n";
