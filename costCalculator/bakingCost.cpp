@@ -15,32 +15,37 @@ double getPositiveDouble(string message);
 double calculateTotalCost(int quantity, double costPerDessert);
 
 void showMenu();
-void saveReport(string recipe, int quantity, double cost, double totalCost);
+void saveReport(string recipe[], int qty[], double costEach[], double totals[], int count);
 void viewReport();
 void showRecommendation(double totalCost, int quantity);
 
+enum SkillLevel { BEGINNER = 1, AMATEUR, PRO };
+
+SkillLevel getSkillLevel();
+
 int main() {
 
-	const int MAX_TITLE_WIDTH = 20;
+	const int MAX_SESSIONS = 10;
+	string recipes[MAX_SESSIONS];
+	int quantities[MAX_SESSIONS];
+	double costs[MAX_SESSIONS];
+	double totals[MAX_SESSIONS];
+	int sessionCount = 0;
 
 	setConsoleColor();
 	showBanner();
 	resetConsoleColor();
 
-	string recipeName;
-	int numberOfDesserts = 0;
-	double costPerDessert = 0.00;
-	double totalCost = 0.00;
 	int choice;
 
 	do {
 		showMenu();
 		cin >> choice;
 
-		while (cin.fail() || choice < 1 || choice > 4) {
+		while (cin.fail() || choice < 1 || choice > 5) {
 			cin.clear(); 
 			cin.ignore(1000, '\n');
-			cout << "Invalid choice. Please enter 1-4: ";
+			cout << "Invalid choice. Please enter 1-5: ";
 			cin >> choice;
 		}
 	
@@ -49,36 +54,75 @@ int main() {
 	
 	case 1:
 		cin.ignore();
-		recipeName = getRecipeName();
-		numberOfDesserts = getPositiveInt("Enter the quantity you plan to bake: ");
-		costPerDessert = getPositiveDouble("Enter the cost per dessert ($): ");
+		recipes[sessionCount] = getRecipeName();
+		quantities[sessionCount] = getPositiveInt("Enter the quantity you plan to bake: ");
+		costs[sessionCount] = getPositiveDouble("Enter the cost per dessert ($): ");
 
-		totalCost = calculateTotalCost(numberOfDesserts, costPerDessert);
+		totals[sessionCount] = calculateTotalCost(quantities[sessionCount], costs[sessionCount]);
 
 		cout << "\n--- Summary ---\n";
 		cout << fixed << setprecision(2);
-		cout << left << setw(MAX_TITLE_WIDTH) << "Recipe Name: " << recipeName << endl;
-		cout << left << setw(MAX_TITLE_WIDTH) << "Quantity: " << numberOfDesserts << endl;
-		cout << left << setw(MAX_TITLE_WIDTH) << "Cost per dessert: " << "$" << costPerDessert << endl;
-		cout << left << setw(MAX_TITLE_WIDTH) << "Total Cost: " << "$" << totalCost << endl;
+		cout << left << setw(22) << "Recipe Name: " << recipes[sessionCount] << endl;
+		cout << left << setw(22) << "Quantity: " << quantities[sessionCount] << endl;
+		cout << left << setw(22) << "Cost per dessert: " << "$" << costs[sessionCount] << endl;
+		cout << left << setw(22) << "Total Cost: " << "$" << totals[sessionCount] << endl;
 
-		saveReport(recipeName, numberOfDesserts, costPerDessert, totalCost);
+		sessionCount++;
+
 		break;
 
 	case 2:
+		saveReport(recipes, quantities, costs, totals, sessionCount);
 		viewReport();
 		break;
 
 	case 3:
-		showRecommendation(totalCost, numberOfDesserts);
+		if (sessionCount == 0) {
+			cout << "Add a session first.\n";
+			break;
+		}
+
+		{
+			SkillLevel level = getSkillLevel();
+
+			switch (level) {
+			case BEGINNER: 
+				cout << "Beginner tip: Start with cookies or cupcakes.\n";
+				break;
+
+			case AMATEUR: 
+				cout << "Amateur tip: Try pastries or layered cakes!\n";
+				break;
+
+			case PRO:
+				cout << "Experiment with artisan breads.\n";
+				break;
+			}
+		}
+
+		if (totals[sessionCount - 1] > 40 && quantities[sessionCount - 1] > 12) {
+			cout << "You're baking a lot, consider purchasing ingredients in bulk!\n";
+		}
+		else if (totals[sessionCount - 1] < 20 && quantities[sessionCount - 1] >= 5) {
+			cout << "Great efficiency! Keep it up!\n";
+		}
+
 		break;
 
 	case 4:
-		cout << "Exiting program. Goodbye!\n";
+		if (sessionCount == 0) {
+			cout << "Add a session first.\n";
+			break;
+		}
+		showRecommendation(totals[sessionCount - 1], quantities[sessionCount - 1]);
 		break;
+
+	case 5:
+		cout << "Goodbye\n";
+		break; 
 	}
 
-	} while (choice != 4);
+	} while (choice != 5);
 
 	return 0;
  }
@@ -140,14 +184,33 @@ double calculateTotalCost(int numberOfDesserts, double costPerDessert) {
 
 void showMenu() {
 	cout << "\n--- Menu ---\n";
-	cout << "1. Add a baking report\n";
-	cout << "2. View baking report\n";
-	cout << "3. Recommend baking level\n";
-	cout << "4. Quit\n";
+	cout << "1. Add a Baking Session\n";
+	cout << "2. View Baking Report\n";
+	cout << "3. Get Skill Level Advice\n";
+	cout << "4. Cost Efficiency Recommendation\n";
+	cout << "5. Quit\n";
 	cout << "Enter your choice: ";
 }
 
-void saveReport(string recipe, int numberOfDesserts, double costEach, double totalCost) {
+SkillLevel getSkillLevel() {
+	int choice;
+	cout << "\nChoose skill level:\n";
+	cout << "1. Beginner\n";
+	cout << "2. Amateur\n";
+	cout << "3. Pro\n";
+	cout << "Enter choice: ";
+	cin >> choice;
+
+	while (cin.fail() || choice < 1 || choice > 3) {
+		cin.clear();
+		cin.ignore(1000, 'n');
+		cout << "Invalid. Enter 1-3: ";
+		cin >> choice;
+	}
+	return static_cast<SkillLevel>(choice);
+}
+
+void saveReport(string recipes[], int qty[], double costEach[], double totals[], int count) {
 	ofstream file("report.txt");
 
 	if (!file) {
@@ -157,10 +220,13 @@ void saveReport(string recipe, int numberOfDesserts, double costEach, double tot
 
 	file << fixed << setprecision(2);
 	file << "------ Baking Report ------\n";
-	file << left << setw(20) << "Recipe Name: " << recipe << endl;
-	file << left << setw(20) << "Quantity: " << numberOfDesserts << endl;
-	file << left << setw(20) << "Individual Cost: $" << costEach << endl;
-	file << left << setw(20) << "Total Cost: $" << totalCost << endl;
+
+	for (int i = 0; i < count; i++) {
+		file << left << setw(20) << "Recipe: " << recipes[i] << endl;
+		file << left << setw(20) << "Quantity: " << qty[i] << endl;
+		file << left << setw(20) << "Individual Cost: $" << costEach[i] << endl;
+		file << left << setw(20) << "Total Cost: $" << totals[i] << endl;
+	}
 
 	cout << "Report saved to 'report.txt'.\n";
 }
