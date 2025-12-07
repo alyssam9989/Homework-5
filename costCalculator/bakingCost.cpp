@@ -6,7 +6,7 @@ using namespace std;
 
 void showBanner();
 void setConsoleColor();
-void resetConsoleColor();
+void resetConsoleColor(); 
 
 string getRecipeName();
 int getPositiveInt(string message);
@@ -21,20 +21,33 @@ void showRecommendation(double totalCost, int quantity);
 
 enum SkillLevel { BEGINNER = 1, AMATEUR, PRO };
 
+struct BakingSession {
+	string recipe;
+	int quantity;
+	double costEach;
+	double total;
+	SkillLevel skill;
+};
+
 SkillLevel getSkillLevel();
 
 int main() {
 
 	const int MAX_SESSIONS = 10;
+	const int MIN_OPTION = 1;
+	const int MAX_OPTION = 5;
+
 	string recipes[MAX_SESSIONS];
 	int quantities[MAX_SESSIONS];
 	double costs[MAX_SESSIONS];
 	double totals[MAX_SESSIONS];
+
+	BakingSession sessionList[MAX_SESSIONS];
+
 	int sessionCount = 0;
 
 	setConsoleColor();
 	showBanner();
-	resetConsoleColor();
 
 	int choice;
 
@@ -42,7 +55,7 @@ int main() {
 		showMenu();
 		cin >> choice;
 
-		while (cin.fail() || choice < 1 || choice > 5) {
+		while (cin.fail() || choice < MIN_OPTION || choice > MAX_OPTION) {
 			cin.clear(); 
 			cin.ignore(1000, '\n');
 			cout << "Invalid choice. Please enter 1-5: ";
@@ -54,11 +67,18 @@ int main() {
 	
 	case 1:
 		cin.ignore();
-		recipes[sessionCount] = getRecipeName();
-		quantities[sessionCount] = getPositiveInt("Enter the quantity you plan to bake: ");
-		costs[sessionCount] = getPositiveDouble("Enter the cost per dessert ($): ");
+		
 
-		totals[sessionCount] = calculateTotalCost(quantities[sessionCount], costs[sessionCount]);
+		sessionList[sessionCount].recipe = getRecipeName();
+		sessionList[sessionCount].quantity = getPositiveInt("Enter the quantity you plan to bake: ");
+		sessionList[sessionCount].costEach = getPositiveDouble("Enter the cost per dessert ($): ");
+		sessionList[sessionCount].total =
+			calculateTotalCost(sessionList[sessionCount].quantity, sessionList[sessionCount].costEach);
+
+		recipes[sessionCount] = sessionList[sessionCount].recipe;
+		quantities[sessionCount] = sessionList[sessionCount].quantity;
+		costs[sessionCount] = sessionList[sessionCount].costEach;
+		totals[sessionCount] = sessionList[sessionCount].total;
 
 		cout << "\n--- Summary ---\n";
 		cout << fixed << setprecision(2);
@@ -84,6 +104,7 @@ int main() {
 
 		{
 			SkillLevel level = getSkillLevel();
+			sessionList[sessionCount - 1].skill = level;
 
 			switch (level) {
 			case BEGINNER: 
@@ -122,13 +143,13 @@ int main() {
 		break; 
 	}
 
-	} while (choice != 5);
+	} while (choice != MAX_OPTION);
 
 	return 0;
  }
 
 void setConsoleColor() {
-	system("color B");
+	system("color 1");
 }
 
 void resetConsoleColor() {
@@ -136,6 +157,7 @@ void resetConsoleColor() {
 }
 
 void showBanner() {
+	setConsoleColor();
 	cout << "===========================================\n";
 	cout << "   Welcome to the Baking Cost Calculator   \n";
 	cout << "===========================================\n";
@@ -203,7 +225,7 @@ SkillLevel getSkillLevel() {
 
 	while (cin.fail() || choice < 1 || choice > 3) {
 		cin.clear();
-		cin.ignore(1000, 'n');
+		cin.ignore(1000, '\n');
 		cout << "Invalid. Enter 1-3: ";
 		cin >> choice;
 	}
@@ -245,14 +267,15 @@ void viewReport() {
 	}
 }
 
-	void showRecommendation(double totalCost, int numberOfDesserts) {
-		if (totalCost > 50 && numberOfDesserts >= 10) {
+void showRecommendation(double totalCost, int numberOfDesserts) {
+	if (totalCost > 50 && numberOfDesserts >= 10) {
 		cout << "Bake more to reduce cost per dessert.\n";
+}
+else if (totalCost <= 50 && numberOfDesserts >= 10) {
+		cout << "You're baking efficiently!\n";
 	}
-	else if (totalCost <= 50 && numberOfDesserts >= 10) {
-			cout << "You're baking efficiently!\n";
-	}
-	else {
-			cout << "Keep baking and experimenting!\n";
+else {
+		cout << "Keep baking and experimenting!\n";
 	}
 }
+
